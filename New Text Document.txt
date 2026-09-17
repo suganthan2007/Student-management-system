@@ -1,0 +1,26 @@
+Please generate a single, fully functional index.html file for an "Alumni Central Data System" web application. The application must include all HTML, CSS, and JavaScript within one file, complete with professional styling and embedded logic.
+
+### 1. UI/UX & Theme Specifications:
+- **Theme:** Modern, sleek dark mode theme.
+- **Colors:** Deep blue/slate background (#0f172a), container background (#1e293b), primary brand blue (#3b82f6), success green (#10b981), danger red (#ef4444), text (#f8fafc), and muted slate for descriptions (#94a3b8).
+- **Layout:** A fixed full-screen header with the app title "Alumni Central Data System" and the current session's role status with a "Log Out" button. Below the header, a two-column responsive layout with a fixed sidebar for navigation and a main content panel area.
+
+### 2. Authentication & Role-Based Access Control (RBAC):
+- A secure full-screen login overlay component must appear dynamically on page load and logout.
+- It should feature a custom "Role Selector" tab system supporting three specific roles: Alumni, Admin, and Student.
+- **Credentials & Logic:**
+  * Alumni Role: Requires Username 'alumni' and Password 'pass' (Shows default hints).
+  * Admin Role: Requires Username 'admin' and Password 'admin123'.
+  * Student Role: Requires any Student ID (minimum 3 characters); hides the password field entirely upon selection.
+- Upon successful login, the overlay must disappear, updating the header with the active session profile and dynamically rendering specific sidebar navigation menus based on privileges.
+
+### 3. Dynamic Views & Panel Logic (JavaScript Single-Page Navigation):
+- **Home Dashboard View (Visible to Admin & Alumni):** Displays a summarized analytical layout using statistic cards showing: "Total Registered", "Verified Profiles", and "Pending Verifications".
+- **Alumni Registry Form View (Visible to Alumni only):** A clean input form capturing Full Name, Batch Year (Number), Corporate Company, Mobile, and Email with an integrated form submission event.
+- **Admin Verification Desk View (Visible to Admin only):** A structured tabular matrix dashboard that lists all registered alumni records. Shows custom status badges ("Pending" or "Approved") with localized conditional action buttons ("Approve" to verify, "Delete" to purge).
+- **Alumni Corporate Directory View (Visible to Admin & Student):** A read-only corporate catalog displaying only "Approved/Verified" profiles. Includes a real-time responsive search bar to filter alumni instantly by Name or Company name.
+
+### 4. Data Persistence & Architecture:
+- Implement mock seed records initially containing sample data for verified and pending users (e.g., Srinivasan Raman - Google India, Meera Krishnan - Zoho Corp, Karthik Raja - TCS).
+- All application data states, state changes (new profile submissions, status updates to Approved, and row deletions) must seamlessly read from and write to browser `localStorage` using a centralized state key (`central_alumni_datastore`) so that data is retained upon page refreshes.
+-

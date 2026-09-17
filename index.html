@@ -1,0 +1,2171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <!-- Viewport Settings to Prevent Mobile Auto-Zooming and Page Distortions -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Mobile App Capability Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="AlumniCentral">
+    
+    <title>Alumni Central Data System</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Design Tokens & Theme Variables */
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: rgba(22, 28, 45, 0.7);
+            --bg-card-hover: rgba(30, 41, 59, 0.85);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-glow: rgba(59, 130, 246, 0.3);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.2);
+            --danger: #f43f5e;
+            --danger-glow: rgba(244, 63, 94, 0.2);
+            --warning: #f59e0b;
+            --warning-glow: rgba(245, 158, 11, 0.2);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-focus: rgba(59, 130, 246, 0.4);
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --font-main: 'Inter', sans-serif;
+            --font-title: 'Outfit', sans-serif;
+            --transition-speed: 0.2s;
+            --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            
+            /* Safe Areas for Modern Mobile Screens */
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+        }
+
+        /* Base Resets & Layout Core */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Strict Auto-Zoom Prevention on Mobile */
+        input, select, textarea, button {
+            font-size: 16px !important;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Scrollbar custom style */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Glowing background blobs */
+        .blur-bg-orb {
+            position: fixed;
+            width: 380px;
+            height: 380px;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.15;
+            pointer-events: none;
+            animation: pulse-slow 18s infinite alternate;
+        }
+        .orb-1 {
+            background: var(--primary);
+            top: -60px;
+            left: -60px;
+        }
+        .orb-2 {
+            background: var(--success);
+            bottom: -60px;
+            right: -60px;
+            animation-delay: 5s;
+        }
+
+        @keyframes pulse-slow {
+            0% { transform: scale(1) translate(0, 0); }
+            50% { transform: scale(1.1) translate(30px, -30px); }
+            100% { transform: scale(0.9) translate(-10px, 20px); }
+        }
+
+        /* ------------------ TOAST ALERTS SYSTEM ------------------ */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 350px;
+            width: calc(100% - 48px);
+        }
+
+        .toast {
+            background: rgba(22, 28, 45, 0.95);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: var(--text-main);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+            animation: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.success svg { color: var(--success); }
+        .toast.info { border-left: 4px solid var(--primary); }
+        .toast.info svg { color: var(--primary); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.error svg { color: var(--danger); }
+
+        .toast svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .toast-msg {
+            font-size: 0.88rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        @keyframes slide-in {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fade-out {
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* ------------------ SECURE ACCOUNT LOGIN OVERLAY ------------------ */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(7, 10, 19, 0.9);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: opacity var(--transition-speed) ease, visibility var(--transition-speed);
+        }
+
+        .login-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .login-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 440px;
+            padding: 35px 25px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            backdrop-filter: blur(12px);
+        }
+
+        .login-card h2 {
+            font-family: var(--font-title);
+            font-size: 1.85rem;
+            margin-bottom: 25px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .role-tabs {
+            display: flex;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 25px;
+        }
+
+        .role-tab {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            height: 44px;
+            font-family: var(--font-main);
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all var(--transition-speed);
+        }
+
+        .role-tab.active {
+            color: var(--text-main);
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .login-form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--text-muted);
+            transition: color var(--transition-speed);
+        }
+
+        .login-input {
+            width: 100%;
+            height: 48px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 14px 12px 42px;
+            color: var(--text-main);
+            font-family: var(--font-main);
+            outline: none;
+            transition: all var(--transition-speed);
+        }
+
+        .login-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .login-input:focus + svg {
+            color: var(--primary);
+        }
+
+        .login-error-msg {
+            background: var(--danger-glow);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            border-radius: 10px;
+            color: var(--danger);
+            padding: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            text-align: left;
+            display: none;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        .login-btn {
+            width: 100%;
+            height: 48px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: var(--font-main);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .login-btn:hover { background: var(--primary-hover); }
+        .login-btn:active { transform: scale(0.98); }
+
+        /* ------------------ HEADER ------------------ */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background: var(--glass-bg);
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--safe-top) 24px 0 24px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo svg {
+            width: 32px;
+            height: 32px;
+            color: var(--primary);
+        }
+
+        .header-title {
+            font-family: var(--font-title);
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #ffffff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Download Button */
+        .download-action-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+            border: none;
+            color: white;
+            height: 44px;
+            padding: 0 18px;
+            border-radius: 10px;
+            font-family: var(--font-main);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px var(--primary-glow);
+            transition: all var(--transition-speed);
+        }
+
+        .download-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px var(--primary-glow);
+        }
+
+        .download-action-btn:active {
+            transform: translateY(1px);
+        }
+
+        .download-action-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            padding: 4px 12px 4px 4px;
+            border-radius: 30px;
+            height: 44px;
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .user-meta {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .user-role-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .logout-btn {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            color: var(--danger);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-speed);
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 4px 10px var(--danger-glow);
+        }
+
+        .logout-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ------------------ LAYOUT STRUCTURE ------------------ */
+        .app-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            filter: blur(10px);
+            transition: filter 0.4s ease;
+        }
+
+        .app-wrapper.authenticated {
+            filter: blur(0);
+        }
+
+        .layout-container {
+            display: flex;
+            flex: 1;
+            margin-top: 70px;
+            position: relative;
+        }
+
+        /* Sidebar Navigation Menu */
+        .sidebar {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            width: 260px;
+            height: calc(100vh - 70px);
+            background: rgba(30, 41, 59, 0.4);
+            border-right: 1px solid var(--glass-border);
+            padding: 30px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 90;
+            transition: all var(--transition-speed);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            height: 46px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            border: 1px solid transparent;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            transition: transform var(--transition-speed);
+        }
+
+        .nav-item:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .nav-item:hover svg {
+            transform: translateX(3px);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.15);
+        }
+
+        .nav-item.active svg {
+            color: var(--primary);
+        }
+
+        /* Main Scrollable Canvas */
+        main {
+            margin-left: 260px;
+            padding: 40px;
+            flex: 1;
+            min-height: calc(100vh - 70px);
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - 260px);
+            padding-bottom: calc(40px + var(--safe-bottom));
+        }
+
+        .view-panel {
+            display: none;
+            animation: fadeIn 0.3s ease-out forwards;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .view-panel.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .view-header {
+            margin-bottom: 5px;
+        }
+
+        .view-title {
+            font-family: var(--font-title);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .view-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* ------------------ HOME PANEL ------------------ */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all var(--transition-speed);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            font-family: var(--font-title);
+        }
+
+        .stat-card.total .stat-value { color: var(--primary); }
+        .stat-card.verified .stat-value { color: var(--success); }
+        .stat-card.pending .stat-value { color: var(--warning); }
+
+        .stat-icon-wrapper {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-card.total .stat-icon-wrapper { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
+        .stat-card.verified .stat-icon-wrapper { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .stat-card.pending .stat-icon-wrapper { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .stat-icon-wrapper svg { width: 26px; height: 26px; }
+
+        .welcome-hero-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(30, 41, 59, 0.4) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 20px;
+            padding: 30px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .welcome-hero-card h3 {
+            font-family: var(--font-title);
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .welcome-hero-card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            max-width: 800px;
+        }
+
+        .dashboard-shortcuts {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .shortcut-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            height: 44px;
+            padding: 0 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shortcut-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px var(--primary-glow);
+        }
+
+        .shortcut-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ------------------ REGISTRY FORM PANEL ------------------ */
+        .form-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            max-width: 700px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .form-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.01);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--warning-glow);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+        }
+
+        .form-status-badge.approved {
+            background: var(--success-glow);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .form-body {
+            padding: 24px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group-full { grid-column: span 2; }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-field label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-input {
+            width: 100%;
+            height: 48px;
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0 14px;
+            color: var(--text-main);
+            font-family: var(--font-main);
+            outline: none;
+            transition: all var(--transition-speed);
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .form-submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            height: 48px;
+            padding: 0 24px;
+            font-family: var(--font-main);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px var(--primary-glow);
+        }
+
+        .form-submit-btn:hover { background: var(--primary-hover); }
+        .form-submit-btn:active { transform: scale(0.98); }
+
+        .form-clear-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            height: 48px;
+            padding: 0 24px;
+            font-family: var(--font-main);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-clear-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-muted);
+        }
+
+        .form-clear-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* ------------------ VERIFICATION DESK PANEL ------------------ */
+        .table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            overflow-x: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .data-table th {
+            background: rgba(15, 23, 42, 0.4);
+            font-family: var(--font-title);
+            font-weight: 600;
+            color: var(--text-muted);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .data-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            height: 52px;
+        }
+
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr { transition: background-color var(--transition-speed); }
+        .data-table tr:hover { background-color: rgba(255, 255, 255, 0.015); }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.approved {
+            background: var(--success-glow);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-badge.pending {
+            background: var(--warning-glow);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .action-btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            border: none;
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .action-btn.approve {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .action-btn.approve:hover { background: var(--success); color: white; }
+
+        .action-btn.delete {
+            background: rgba(244, 63, 94, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+
+        .action-btn.delete:hover { background: var(--danger); color: white; }
+        .action-btn svg { width: 18px; height: 18px; }
+
+        /* ------------------ DIRECTORY PANEL ------------------ */
+        .directory-controls {
+            display: flex;
+            gap: 16px;
+            max-width: 600px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-wrapper svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--text-muted);
+        }
+
+        .search-input {
+            width: 100%;
+            height: 48px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0 14px 0 42px;
+            color: var(--text-main);
+            font-family: var(--font-main);
+            outline: none;
+            transition: all var(--transition-speed);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .directory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 20px;
+        }
+
+        .directory-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-speed);
+        }
+
+        .directory-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--success));
+        }
+
+        .directory-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .dir-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-family: var(--font-title);
+        }
+
+        .dir-name {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .dir-batch {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .dir-details {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 14px;
+        }
+
+        .dir-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .dir-row svg {
+            width: 16px;
+            height: 16px;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .dir-value {
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ------------------ RESPONSIVE BREAKPOINTS (LAPTOP VS MOBILE) ------------------ */
+        @media (max-width: 768px) {
+            header {
+                height: 60px;
+                padding: var(--safe-top) 16px 0 16px;
+            }
+
+            .header-title {
+                font-size: 1.05rem;
+            }
+
+            /* Responsive Download Button transformation for mobile headers */
+            .download-action-btn {
+                width: 44px;
+                height: 44px;
+                padding: 0;
+                border-radius: 50%;
+                justify-content: center;
+            }
+            
+            .download-action-btn span {
+                display: none;
+            }
+
+            .user-badge {
+                padding: 4px;
+                border-radius: 50%;
+                width: 44px;
+                border: none;
+                background: none;
+            }
+            .user-meta {
+                display: none;
+            }
+
+            /* Sidebar changes to Bottom Tab Navigation Menu */
+            .sidebar {
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                left: 0;
+                width: 100%;
+                height: calc(65px + var(--safe-bottom));
+                background: rgba(15, 23, 42, 0.95);
+                border-right: none;
+                border-top: 1px solid var(--glass-border);
+                backdrop-filter: blur(20px);
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                padding: 0 10px var(--safe-bottom) 10px;
+                gap: 0;
+                z-index: 100;
+                box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.35);
+            }
+
+            .nav-item {
+                flex: 1;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 4px;
+                padding: 4px 0;
+                height: 100%;
+                border-radius: 0;
+                font-size: 0.72rem;
+                background: none !important;
+                border: none !important;
+                color: var(--text-muted);
+            }
+
+            .nav-item svg {
+                width: 22px;
+                height: 22px;
+            }
+
+            .nav-item.active {
+                color: var(--primary);
+            }
+
+            .nav-item:hover svg {
+                transform: none;
+            }
+
+            /* Adjust Main Frame Margins */
+            main {
+                margin-left: 0;
+                width: 100%;
+                padding: 24px 16px;
+                margin-top: 60px;
+                margin-bottom: calc(65px + var(--safe-bottom));
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group-full {
+                grid-column: span 1;
+            }
+
+            /* ------------------ RESPONSIVE DATA TABLE TO VERTICAL CARDS ------------------ */
+            .data-table, .data-table tbody, .data-table tr, .data-table td {
+                display: block;
+                width: 100%;
+            }
+            
+            .data-table thead {
+                display: none;
+            }
+            
+            .data-table tr {
+                background: rgba(22, 28, 45, 0.6);
+                border: 1px solid var(--border-color);
+                border-radius: 16px;
+                margin-bottom: 20px;
+                padding: 20px;
+                box-shadow: var(--shadow-lg);
+                backdrop-filter: blur(10px);
+                transition: transform 0.2s, border-color 0.2s;
+            }
+            
+            .data-table tr:hover {
+                transform: translateY(-2px);
+                border-color: rgba(255, 255, 255, 0.15);
+            }
+            
+            .data-table td {
+                padding: 10px 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 0.9rem;
+                height: auto;
+                text-align: right;
+            }
+            
+            .data-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--text-muted);
+                margin-right: 16px;
+                text-align: left;
+            }
+            
+            .data-table td:last-child {
+                border-bottom: none;
+                justify-content: flex-end;
+                padding-top: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Blurry shapes -->
+    <div class="blur-bg-orb orb-1"></div>
+    <div class="blur-bg-orb orb-2"></div>
+
+    <!-- Active Toast Alert Popups -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ------------------ SECURE ACCOUNT LOGIN OVERLAY ------------------ -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+            <h2>Alumni Central</h2>
+            
+            <!-- Custom Dynamic Selector -->
+            <div class="role-tabs">
+                <button class="role-tab active" data-role="alumni">Alumni</button>
+                <button class="role-tab" data-role="admin">Admin</button>
+                <button class="role-tab" data-role="student">Student</button>
+            </div>
+
+            <!-- Login Warnings -->
+            <div class="login-error-msg" id="loginError">
+                Invalid credentials. Please verify data entries.
+            </div>
+
+            <!-- Form -->
+            <form id="loginForm" autocomplete="off">
+                <div class="login-form-group" id="userGroup">
+                    <label id="userLabel" for="username">Username</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="username" class="login-input" required placeholder="Enter username">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="login-form-group" id="passGroup">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" class="login-input" required placeholder="Enter password">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    <span>Access System</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px;height:18px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ------------------ APPLICATION CORE INTERFACE ------------------ -->
+    <div class="app-wrapper" id="appWrapper">
+        
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <div class="header-logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A5.906 5.906 0 0 1 12 3.493a5.907 5.907 0 0 1 6.885 5.841c-.896.223-1.785.497-2.658.814m-15.482 0A48.52 48.52 0 0 1 12 12.587a48.52 48.52 0 0 1 6.885-2.44M12 12.587V21.75M12.75 21.75v-9a.75.75 0 0 0-1.5 0v9m-4.5-9.75h9" />
+                    </svg>
+                </div>
+                <span class="header-title">Alumni Central</span>
+            </div>
+
+            <div class="header-right">
+                <!-- Download Button -->
+                <button class="download-action-btn" id="downloadBtn" title="Download index.html file">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    <span>Download Project File (.html)</span>
+                </button>
+
+                <div class="user-badge">
+                    <div class="user-avatar" id="avatarBadge">U</div>
+                    <div class="user-meta">
+                        <span class="user-name" id="sessionName">User</span>
+                        <span class="user-role-label" id="sessionRole">Role</span>
+                    </div>
+                </div>
+
+                <button class="logout-btn" id="logoutBtn" title="Log Out">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Container -->
+        <div class="layout-container">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="nav-item active" data-target="dashboardPanel" id="navHome">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                    <span>Dashboard</span>
+                </div>
+
+                <div class="nav-item" data-target="formPanel" id="navForm">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                    </svg>
+                    <span>Submit Profile</span>
+                </div>
+
+                <div class="nav-item" data-target="deskPanel" id="navDesk">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.333 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                    </svg>
+                    <span>Verification</span>
+                </div>
+
+                <div class="nav-item" data-target="directoryPanel" id="navDirectory">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.97 5.97 0 0 0-.75-3.3m0 0A5.99 5.99 0 0 0 12 12.75" />
+                    </svg>
+                    <span>Directory</span>
+                </div>
+            </aside>
+
+            <!-- Main Workspace -->
+            <main>
+                <!-- ------------------ DASHBOARD PANEL ------------------ -->
+                <div class="view-panel active" id="dashboardPanel">
+                    <div class="view-header">
+                        <h1 class="view-title">Welcome Dashboard</h1>
+                        <p class="view-subtitle">Interactive statistics and dynamic access controls.</p>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="dashboard-grid">
+                        <div class="stat-card total">
+                            <div class="stat-info">
+                                <span class="stat-label">Total Registered</span>
+                                <span class="stat-value" id="statTotal">0</span>
+                            </div>
+                            <div class="stat-icon-wrapper">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.978 11.978 0 0 1 12 20.25a11.98 11.98 0 0 1-3-1.013v-.109m6 0a9.23 9.23 0 0 0-6 0m6 0v-.003c0-1.113-.285-2.16-.786-3.07M9 19.128v.109A12.042 12.042 0 0 1 5 19.5a9.229 9.229 0 0 1-2.625-.372 4.125 4.125 0 0 1 7.533-2.493M9 19.128v-.003c0-1.113.285-2.16.786-3.07M15 7.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 2.25a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="stat-card verified">
+                            <div class="stat-info">
+                                <span class="stat-label">Verified Profiles</span>
+                                <span class="stat-value" id="statVerified">0</span>
+                            </div>
+                            <div class="stat-icon-wrapper">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="stat-card pending">
+                            <div class="stat-info">
+                                <span class="stat-label">Pending Verifications</span>
+                                <span class="stat-value" id="statPending">0</span>
+                            </div>
+                            <div class="stat-icon-wrapper">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Welcome Card Hero -->
+                    <div class="welcome-hero-card">
+                        <h3 id="welcomeHeaderTitle">Welcome back, User!</h3>
+                        <p>Welcome to the Alumni Central Data System (ACDS). Access statistics, update profiles, and manage verification desks. Resizing the viewport dynamically updates the layout elements to scale seamlessly.</p>
+                        
+                        <div class="dashboard-shortcuts" id="dashboardShortcuts">
+                            <!-- Shortcuts render here dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ------------------ REGISTRY FORM PANEL ------------------ -->
+                <div class="view-panel" id="formPanel">
+                    <div class="view-header">
+                        <h1 class="view-title">Alumni Profile Registry</h1>
+                        <p class="view-subtitle">Enter details to update your professional catalog profile. Form fonts scale at 16px min.</p>
+                    </div>
+
+                    <div class="form-container">
+                        <div class="form-header">
+                            <div class="form-status-badge" id="formStatusBadge">Status: Not Submitted</div>
+                            <h3 style="font-family: var(--font-title); font-size:1.15rem;">Professional Details</h3>
+                        </div>
+                        <div class="form-body">
+                            <form id="alumniRegisterForm">
+                                <div class="form-grid">
+                                    <div class="form-field form-group-full">
+                                        <label for="fullName">Full Name</label>
+                                        <input type="text" id="fullName" class="form-input" placeholder="e.g. Srinivasan Raman" required>
+                                    </div>
+                                    <div class="form-field">
+                                        <label for="batchYear">Graduation Batch Year</label>
+                                        <input type="number" id="batchYear" class="form-input" placeholder="e.g. 2020" min="1950" max="2035" required>
+                                    </div>
+                                    <div class="form-field">
+                                        <label for="corporateCompany">Current Corporate Company</label>
+                                        <input type="text" id="corporateCompany" class="form-input" placeholder="e.g. Google India" required>
+                                    </div>
+                                    <div class="form-field">
+                                        <label for="mobileNumber">Mobile Contact Number</label>
+                                        <input type="tel" id="mobileNumber" class="form-input" placeholder="e.g. +91 9876543210" required>
+                                    </div>
+                                    <div class="form-field">
+                                        <label for="emailAddress">Professional Email Address</label>
+                                        <input type="email" id="emailAddress" class="form-input" placeholder="e.g. raman@company.com" required>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <button type="submit" class="form-submit-btn" id="formSubmitBtn">
+                                        <span>Submit Registration</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:16px;height:16px;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="form-clear-btn" id="formClearBtn">
+                                        <span>Clear Form</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:16px;height:16px;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ------------------ ADMIN DESK PANEL ------------------ -->
+                <div class="view-panel" id="deskPanel">
+                    <div class="view-header">
+                        <h1 class="view-title">Verification Desk</h1>
+                        <p class="view-subtitle">Review credentials. Rows collapse into touch-friendly cards on mobile screens automatically.</p>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Batch</th>
+                                    <th>Corporate Company</th>
+                                    <th>Contact Details</th>
+                                    <th>Verification Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="deskTableBody">
+                                <!-- Populated dynamically via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ------------------ DIRECTORY PANEL ------------------ -->
+                <div class="view-panel" id="directoryPanel">
+                    <div class="view-header">
+                        <h1 class="view-title">Alumni Directory</h1>
+                        <p class="view-subtitle">Filter approved alumni names or organizations dynamically.</p>
+                    </div>
+
+                    <div class="directory-controls">
+                        <div class="search-wrapper">
+                            <input type="text" id="dirSearch" class="search-input" placeholder="Search by name or company...">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.637 10.637Z" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="directory-grid" id="directoryGrid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ------------------ APPLICATION LOGIC ------------------ -->
+    <script>
+        // Central State & LocalStorage Configurations
+        const STORE_KEY = 'central_alumni_datastore';
+        const SEED_DATA = [
+            {
+                id: 'seed-1',
+                name: 'Srinivasan Raman',
+                batch: 2018,
+                company: 'Google India',
+                mobile: '+91 98765 43210',
+                email: 'raman@google.com',
+                status: 'Approved',
+                username: 'srinivasan'
+            },
+            {
+                id: 'seed-2',
+                name: 'Meera Krishnan',
+                batch: 2019,
+                company: 'Zoho Corp',
+                mobile: '+91 87654 32109',
+                email: 'meera.k@zoho.com',
+                status: 'Approved',
+                username: 'meera'
+            },
+            {
+                id: 'seed-3',
+                name: 'Karthik Raja',
+                batch: 2021,
+                company: 'TCS',
+                mobile: '+91 76543 21098',
+                email: 'karthik.raja@tcs.com',
+                status: 'Pending',
+                username: 'karthik'
+            }
+        ];
+
+        let state = {
+            currentUser: null,
+            alumniList: []
+        };
+
+        // --- UNIVERSAL TOUCH & CLICK EVENT BINDER ---
+        function bindTouchAndClick(element, callback) {
+            if (!element) return;
+            let touchStarted = false;
+            
+            element.addEventListener('touchstart', (e) => {
+                touchStarted = true;
+            }, { passive: true });
+            
+            element.addEventListener('touchend', (e) => {
+                if (touchStarted) {
+                    e.preventDefault();
+                    callback.call(element, e);
+                }
+                touchStarted = false;
+            });
+            
+            element.addEventListener('click', (e) => {
+                if (!touchStarted) {
+                    callback.call(element, e);
+                }
+                touchStarted = false;
+            });
+        }
+
+        // Bind all matching selectors dynamically inside a parent
+        function bindAll(selector, callback, parent = document) {
+            const elements = parent.querySelectorAll(selector);
+            elements.forEach(element => {
+                if (element.dataset.bound) return;
+                element.dataset.bound = 'true';
+                bindTouchAndClick(element, callback);
+            });
+        }
+
+        // Initialize State on Load with Smart Persistence Check
+        function initializeState() {
+            const rawData = localStorage.getItem(STORE_KEY);
+            // Strict load check: load stored items and never overwrite with seed defaults on reopen/refresh
+            if (rawData !== null && rawData !== '') {
+                try {
+                    state.alumniList = JSON.parse(rawData);
+                } catch (e) {
+                    state.alumniList = [...SEED_DATA];
+                    saveState();
+                }
+            } else {
+                state.alumniList = [...SEED_DATA];
+                saveState();
+            }
+
+            // Sync User Session Storage
+            const session = sessionStorage.getItem('acds_session');
+            if (session) {
+                try {
+                    state.currentUser = JSON.parse(session);
+                    loginSuccess(false);
+                } catch(e) {
+                    sessionStorage.removeItem('acds_session');
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(STORE_KEY, JSON.stringify(state.alumniList));
+        }
+
+        // storage event listener to synchronize views if localStorage updates from another tab/context
+        window.addEventListener('storage', (e) => {
+            if (e.key === STORE_KEY) {
+                initializeState();
+                renderDashboard();
+                renderAdminDesk();
+                renderDirectory();
+            }
+        });
+
+        // --- MOBILE-SAFE BLOB SOURCE CODE DOWNLOAD ---
+        function downloadSelfCode() {
+            // Packages the entire HTML document text contents natively
+            const documentContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            
+            // Advanced Mobile-Safe Blob downloader logic (not standard Data URIs)
+            const blob = new Blob([documentContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = 'index.html';
+            document.body.appendChild(anchor);
+            anchor.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(anchor);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            showToast('Standalone application index.html downloaded!', 'success');
+        }
+
+        // --- TOAST NOTIFICATIONS ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let iconSvg = '';
+            if (type === 'success') {
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                </svg>`;
+            } else if (type === 'error') {
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                </svg>`;
+            } else {
+                iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 1 1 1.085 1.085l-.041.02-.082.043a1.5 1.5 0 0 0-.693 1.01l-.047.365a.75.75 0 0 1-1.485-.195l.047-.365a3 3 0 0 1 1.386-2.02l.082-.043ZM12.75 16.5a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM2.25 12a9.75 9.75 0 1 1 19.5 0 9.75 9.75 0 0 1-19.5 0Z" />
+                </svg>`;
+            }
+
+            toast.innerHTML = `
+                ${iconSvg}
+                <div class="toast-msg">${message}</div>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'fade-out 0.3s forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- AUTH OVERLAY LOGIC ---
+        let selectedRole = 'alumni';
+        const loginOverlay = document.getElementById('loginOverlay');
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const userLabel = document.getElementById('userLabel');
+        const passGroup = document.getElementById('passGroup');
+        const loginError = document.getElementById('loginError');
+
+        // Role Tab Selectors Setup using universal binding
+        const tabs = document.querySelectorAll('.role-tab');
+        tabs.forEach(tab => {
+            bindTouchAndClick(tab, (e) => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                selectedRole = tab.dataset.role;
+                loginError.style.display = 'none';
+
+                if (selectedRole === 'alumni') {
+                    userLabel.textContent = 'Username';
+                    usernameInput.placeholder = 'Enter username';
+                    usernameInput.value = '';
+                    passGroup.style.display = 'block';
+                    passwordInput.setAttribute('required', 'true');
+                } else if (selectedRole === 'admin') {
+                    userLabel.textContent = 'Admin Username';
+                    usernameInput.placeholder = 'Enter admin username';
+                    usernameInput.value = '';
+                    passGroup.style.display = 'block';
+                    passwordInput.setAttribute('required', 'true');
+                } else if (selectedRole === 'student') {
+                    userLabel.textContent = 'Student ID (minimum 3 characters)';
+                    usernameInput.placeholder = 'Enter Student ID';
+                    usernameInput.value = '';
+                    passGroup.style.display = 'none';
+                    passwordInput.removeAttribute('required');
+                }
+            });
+        });
+
+        // Submit Authentication
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            let isValid = false;
+            if (selectedRole === 'alumni') {
+                if (username === 'alumni' && password === 'pass') isValid = true;
+            } else if (selectedRole === 'admin') {
+                if (username === 'admin' && password === 'admin123') isValid = true;
+            } else if (selectedRole === 'student') {
+                if (username.length >= 3) isValid = true;
+            }
+
+            if (isValid) {
+                state.currentUser = { username, role: selectedRole };
+                sessionStorage.setItem('acds_session', JSON.stringify(state.currentUser));
+                loginSuccess(true);
+            } else {
+                loginError.style.display = 'block';
+                loginError.style.animation = 'none';
+                void loginError.offsetWidth;
+                loginError.style.animation = 'shake 0.4s ease';
+            }
+        }
+
+        loginForm.addEventListener('submit', handleLogin);
+
+        function loginSuccess(showWelcomeToast = true) {
+            loginOverlay.style.display = 'none';
+            document.getElementById('appWrapper').classList.add('authenticated');
+
+            const displayName = state.currentUser.role === 'student' ? `ID: ${state.currentUser.username}` : state.currentUser.username;
+            document.getElementById('sessionName').textContent = displayName.toUpperCase();
+            
+            let roleString = 'Portal Session';
+            if (state.currentUser.role === 'admin') roleString = 'Admin Session';
+            else if (state.currentUser.role === 'alumni') roleString = 'Alumni Portal';
+            else if (state.currentUser.role === 'student') roleString = 'Student Portal';
+            document.getElementById('sessionRole').textContent = roleString;
+
+            document.getElementById('avatarBadge').textContent = state.currentUser.username.charAt(0);
+
+            applyRBAC();
+
+            if (showWelcomeToast) {
+                showToast(`Authorized as ${state.currentUser.role.toUpperCase()}`, 'success');
+            }
+        }
+
+        // Apply dynamic layouts based on user roles
+        function applyRBAC() {
+            const role = state.currentUser.role;
+            const navHome = document.getElementById('navHome');
+            const navForm = document.getElementById('navForm');
+            const navDesk = document.getElementById('navDesk');
+            const navDirectory = document.getElementById('navDirectory');
+
+            if (role === 'admin') {
+                navHome.style.display = 'flex';
+                navForm.style.display = 'none';
+                navDesk.style.display = 'flex';
+                navDirectory.style.display = 'flex';
+                switchView('dashboardPanel');
+            } else if (role === 'alumni') {
+                navHome.style.display = 'flex';
+                navForm.style.display = 'flex';
+                navDesk.style.display = 'none';
+                navDirectory.style.display = 'none';
+                switchView('dashboardPanel');
+            } else if (role === 'student') {
+                navHome.style.display = 'none';
+                navForm.style.display = 'none';
+                navDesk.style.display = 'none';
+                navDirectory.style.display = 'flex';
+                switchView('directoryPanel');
+            }
+
+            renderDashboard();
+            renderAdminDesk();
+            renderDirectory();
+        }
+
+        // Log out cleanups using universal event binding
+        bindTouchAndClick(document.getElementById('logoutBtn'), () => {
+            sessionStorage.removeItem('acds_session');
+            state.currentUser = null;
+            document.getElementById('alumniRegisterForm').reset();
+            
+            document.getElementById('appWrapper').classList.remove('authenticated');
+            loginOverlay.style.display = 'flex';
+            
+            usernameInput.value = '';
+            passwordInput.value = '';
+            loginError.style.display = 'none';
+
+            showToast('Successfully logged out', 'info');
+        });
+
+        // --- SINGLE-PAGE ROUTING ---
+        function switchView(targetPanelId) {
+            document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+            const targetPanel = document.getElementById(targetPanelId);
+            if (targetPanel) targetPanel.classList.add('active');
+
+            const activeNavs = document.querySelectorAll(`.nav-item[data-target="${targetPanelId}"]`);
+            activeNavs.forEach(nav => nav.classList.add('active'));
+
+            // Strict blank form state on return / navigation back
+            if (targetPanelId === 'formPanel') {
+                const form = document.getElementById('alumniRegisterForm');
+                if (form) form.reset();
+                const statusBadge = document.getElementById('formStatusBadge');
+                if (statusBadge) {
+                    statusBadge.textContent = 'Status: Not Submitted';
+                    statusBadge.className = 'form-status-badge';
+                }
+            }
+        }
+
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            bindTouchAndClick(item, () => {
+                switchView(item.dataset.target);
+            });
+        });
+
+        // --- HOME DASHBOARD DRAW ---
+        function renderDashboard() {
+            if (!state.currentUser) return;
+
+            const total = state.alumniList.length;
+            const verified = state.alumniList.filter(item => item.status === 'Approved').length;
+            const pending = state.alumniList.filter(item => item.status === 'Pending').length;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statVerified').textContent = verified;
+            document.getElementById('statPending').textContent = pending;
+
+            const title = document.getElementById('welcomeHeaderTitle');
+            if (state.currentUser.role === 'admin') {
+                title.textContent = `Welcome back, System Admin!`;
+            } else if (state.currentUser.role === 'alumni') {
+                title.textContent = `Hello, ${state.currentUser.username.toUpperCase()}!`;
+            }
+
+            // Generate shortcuts
+            const shortcuts = document.getElementById('dashboardShortcuts');
+            shortcuts.innerHTML = '';
+
+            if (state.currentUser.role === 'admin') {
+                shortcuts.innerHTML = `
+                    <button class="shortcut-btn" data-target="deskPanel">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.333 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                        </svg>
+                        <span>Open Verification Desk</span>
+                    </button>
+                    <button class="shortcut-btn" data-target="directoryPanel">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.637 10.637Z" />
+                        </svg>
+                        <span>Explore Directory</span>
+                    </button>
+                    <button class="shortcut-btn download-shortcut" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); color: var(--success);">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        <span>Download Project File (.html)</span>
+                    </button>
+                `;
+            } else if (state.currentUser.role === 'alumni') {
+                shortcuts.innerHTML = `
+                    <button class="shortcut-btn" data-target="formPanel">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                        </svg>
+                        <span>Submit Profile</span>
+                    </button>
+                    <button class="shortcut-btn download-shortcut" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); color: var(--success);">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        <span>Download Project File (.html)</span>
+                    </button>
+                `;
+            }
+
+            // Bind shortcuts dynamically
+            bindAll('.shortcut-btn[data-target]', function() {
+                const target = this.getAttribute('data-target');
+                switchView(target);
+            }, shortcuts);
+
+            bindAll('.download-shortcut', function() {
+                downloadSelfCode();
+            }, shortcuts);
+        }
+
+        // --- PROFILE FORM CONTROLS ---
+        const registerForm = document.getElementById('alumniRegisterForm');
+        
+        // Form Clear Button binding
+        bindTouchAndClick(document.getElementById('formClearBtn'), () => {
+            registerForm.reset();
+            showToast('Form cleared', 'info');
+        });
+
+        // Form Submission with Append Logic and instant LocalStorage commit
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            if (!state.currentUser || state.currentUser.role !== 'alumni') return;
+
+            const name = document.getElementById('fullName').value.trim();
+            const batch = parseInt(document.getElementById('batchYear').value);
+            const company = document.getElementById('corporateCompany').value.trim();
+            const mobile = document.getElementById('mobileNumber').value.trim();
+            const email = document.getElementById('emailAddress').value.trim();
+
+            const newRecord = {
+                id: 'alumni-' + Date.now(),
+                name,
+                batch,
+                company,
+                mobile,
+                email,
+                status: 'Pending',
+                username: state.currentUser.username
+            };
+
+            // Retrieve latest array from localStorage immediately before appending to avoid any data overwrite/desync
+            const currentRaw = localStorage.getItem(STORE_KEY);
+            if (currentRaw !== null && currentRaw !== '') {
+                try {
+                    state.alumniList = JSON.parse(currentRaw);
+                } catch (err) {}
+            }
+
+            // Append/push the new record
+            state.alumniList.push(newRecord);
+            
+            // Save state immediately back to localStorage
+            saveState();
+            
+            showToast('Profile registered! Awaiting verification.', 'success');
+            
+            // Automatic reset after submission to clear text fields
+            registerForm.reset();
+
+            const statusBadge = document.getElementById('formStatusBadge');
+            statusBadge.textContent = 'Status: Pending';
+            statusBadge.className = 'form-status-badge';
+
+            renderDashboard();
+            renderAdminDesk();
+            renderDirectory();
+        });
+
+        // --- VERIFICATION DESK DATA MATRIX ---
+        function renderAdminDesk() {
+            const tableBody = document.getElementById('deskTableBody');
+            tableBody.innerHTML = '';
+
+            if (state.alumniList.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center; padding: 40px; color: var(--text-muted);">
+                            No registered logs found in memory.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            state.alumniList.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.id = `row-${item.id}`;
+                const badgeClass = item.status === 'Approved' ? 'approved' : 'pending';
+                
+                let approveBtnHtml = '';
+                if (item.status === 'Pending') {
+                    approveBtnHtml = `
+                        <button class="action-btn approve" data-id="${item.id}" title="Approve Entry">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                            </svg>
+                        </button>
+                    `;
+                }
+
+                tr.innerHTML = `
+                    <td data-label="Full Name" style="font-weight:600;">${item.name}</td>
+                    <td data-label="Batch">${item.batch}</td>
+                    <td data-label="Company">${item.company}</td>
+                    <td data-label="Contact Details">
+                        <div style="font-size:0.85rem; color:var(--text-main); font-weight: 500;">${item.email}</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">${item.mobile}</div>
+                    </td>
+                    <td data-label="Status"><span class="status-badge ${badgeClass}">${item.status}</span></td>
+                    <td data-label="Actions">
+                        <div class="action-btn-group">
+                            ${approveBtnHtml}
+                            <button class="action-btn delete" data-id="${item.id}" title="Purge Record">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // Bind events for dynamically generated rows
+            bindAll('.action-btn.approve', function() {
+                const id = this.getAttribute('data-id');
+                approveAlumni(id);
+            }, tableBody);
+
+            bindAll('.action-btn.delete', function() {
+                const id = this.getAttribute('data-id');
+                deleteAlumni(id);
+            }, tableBody);
+        }
+
+        function approveAlumni(id) {
+            const index = state.alumniList.findIndex(item => item.id === id);
+            if (index > -1) {
+                state.alumniList[index].status = 'Approved';
+                saveState();
+                renderAdminDesk();
+                renderDashboard();
+                renderDirectory();
+                showToast(`Approved profile for ${state.alumniList[index].name}!`, 'success');
+            }
+        }
+
+        function deleteAlumni(id) {
+            const index = state.alumniList.findIndex(item => item.id === id);
+            if (index > -1) {
+                const name = state.alumniList[index].name;
+                const row = document.getElementById(`row-${id}`);
+                if (row) {
+                    row.style.transition = 'all 0.3s ease';
+                    row.style.opacity = '0';
+                    row.style.transform = 'scale(0.95)';
+                }
+
+                setTimeout(() => {
+                    state.alumniList.splice(index, 1);
+                    saveState();
+                    renderAdminDesk();
+                    renderDashboard();
+                    renderDirectory();
+                    showToast(`Record of ${name} deleted.`, 'error');
+                }, 300);
+            }
+        }
+
+        // --- DIRECTORY BOARD CONTROLS ---
+        function renderDirectory() {
+            const grid = document.getElementById('directoryGrid');
+            grid.innerHTML = '';
+
+            const searchVal = document.getElementById('dirSearch').value.toLowerCase().trim();
+            const approvedList = state.alumniList.filter(item => {
+                const isApproved = item.status === 'Approved';
+                const isMatch = item.name.toLowerCase().includes(searchVal) || item.company.toLowerCase().includes(searchVal);
+                return isApproved && isMatch;
+            });
+
+            if (approvedList.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 45px 0;">
+                        No approved alumni matches found.
+                    </div>
+                `;
+                return;
+            }
+
+            approvedList.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'directory-card';
+                const initials = item.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+
+                card.innerHTML = `
+                    <div style="display:flex; align-items:center; gap: 14px;">
+                        <div class="dir-avatar">${initials}</div>
+                        <div>
+                            <span class="dir-name">${item.name}</span>
+                            <div class="dir-batch">Graduation Batch: ${item.batch}</div>
+                        </div>
+                    </div>
+                    <div class="dir-details">
+                        <div class="dir-row">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75v3m-6 0h6" />
+                            </svg>
+                            <span class="dir-value">${item.company}</span>
+                        </div>
+                        <div class="dir-row">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                            </svg>
+                            <a href="mailto:${item.email}" class="dir-value" style="color: var(--primary); text-decoration:none;">${item.email}</a>
+                        </div>
+                        <div class="dir-row">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.84c0-2.217 1.782-4.01 3.99-4.01a14.887 14.887 0 0 1 11.02 4.757 1.488 1.488 0 0 1-.05 2.13l-1.71 1.71a1.488 1.488 0 0 1-2.112-.053 11.539 11.539 0 0 0-3.32-3.32c-.052-.052-.105-.1-.16-.148a1.488 1.488 0 0 1-.054-2.11L11.3 4.88a1.489 1.489 0 0 1 2.118-.047 14.825 14.825 0 0 1 4.757 11.02c0 2.208-1.792 3.99-4.01 3.99-8.232 0-14.908-6.676-14.908-14.9M15.3 15.3c-.052-.052-.105-.1-.16-.148a1.488 1.488 0 0 1-.054-2.11l1.71-1.71a1.489 1.489 0 0 1 2.118-.047c.504.504.973 1.042 1.401 1.61a1.489 1.489 0 0 1-.047 2.118l-1.71 1.71a1.488 1.488 0 0 1-2.112-.053c-.347-.347-.69-.7-1.025-1.06Z" />
+                            </svg>
+                            <span class="dir-value">${item.mobile}</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        document.getElementById('dirSearch').addEventListener('input', renderDirectory);
+
+        // Download Self Code Button bind
+        bindTouchAndClick(document.getElementById('downloadBtn'), downloadSelfCode);
+
+        // Core App Entry Bootstrap
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeState();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# Windows thumbnail cache files
+Thumbs.db
+ehthumbs.db
+Thumbs.db:encryptable
+
+# Folder config file
+Desktop.ini
+
+# Recycler Folder
+$RECYCLE.BIN/
